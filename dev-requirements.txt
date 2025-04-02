@@ -1,0 +1,3 @@
+black[jupyter]==24.10.0
+isort==6.0.1
+pre-commit==v4.2.0
