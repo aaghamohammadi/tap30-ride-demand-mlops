@@ -3,3 +3,4 @@ data_ingestion:
   object_name: "tap30-ride-demand-mlops.txt"
   storage_path: "s3.ir-thr-at1.arvanstorage.ir"
   train_ratio: 0.9
+  artifact_dir: "artifacts" 
