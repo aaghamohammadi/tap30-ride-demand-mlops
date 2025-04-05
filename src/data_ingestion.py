@@ -22,7 +22,6 @@ import random
 from pathlib import Path
 from urllib.request import urlopen
 
-from config_reader import read_config
 from logger import get_logger
 
 logger = get_logger(__name__)
