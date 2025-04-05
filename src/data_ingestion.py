@@ -39,7 +39,7 @@ class DataIngestion:
         self.train_ratio = self.data_ingestion_config["train_ratio"]
         self.url = f"https://{self.bucket_name}.{self.storage_path}/{self.object_name}"
 
-        artifact_dir = Path(config["data_ingestion"]["artifact_dir"])
+        artifact_dir = Path(self.data_ingestion_config["artifact_dir"])
         self.raw_dir = artifact_dir / "raw"
 
         self.raw_dir.mkdir(parents=True, exist_ok=True)
