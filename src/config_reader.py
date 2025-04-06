@@ -24,7 +24,7 @@ from pathlib import Path
 
 import yaml
 
-from logger import get_logger
+from src.logger import get_logger
 
 logger = get_logger(__name__)
 
