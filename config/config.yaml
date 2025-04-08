@@ -7,3 +7,8 @@ data_ingestion:
 
 data_processing:
   shift: 18
+
+model_training:
+  n_estimators: 500
+  max_samples: 0.6
+  n_jobs: -1
