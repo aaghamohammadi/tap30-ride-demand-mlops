@@ -17,6 +17,7 @@
 
 from pathlib import Path
 
+import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
@@ -32,6 +33,8 @@ class ModelTraining:
         self.model_training_config = config["model_training"]
         artifact_dir = Path(config["data_ingestion"]["artifact_dir"])
         self.processed_dir = artifact_dir / "processed"
+        self.model_output_dir = artifact_dir / "models"
+        self.model_output_dir.mkdir(parents=True, exist_ok=True)
 
     def load_data(self):
         """Load training and validation data from processed files.
@@ -99,6 +102,24 @@ class ModelTraining:
         logger.info(f"Out-of-Bag Score: {model.oob_score_}")
         logger.info(f"Root Mean Squared Error for validation data: {rmse}")
 
+    def save(self, model):
+        """Save the trained model to disk using joblib.
+
+        Parameters
+        ----------
+        model : RandomForestRegressor
+            The trained model to be saved
+
+        Notes
+        -----
+        The model is saved as a compressed .joblib file in the model_output_dir directory
+        """
+        logger.info("Start saving the model")
+        joblib.dump(model, self.model_output_dir / "rf.joblib", compress=("lzma", 3))
+        logger.info(
+            f"Model saved successfully to {self.model_output_dir / 'rf.joblib'}"
+        )
+
     def run(self):
         """Run the entire model training.
 
@@ -114,4 +135,5 @@ class ModelTraining:
         model = self.build_model()
         self.train(model, train_data)
         self.evaluate(model, val_data)
+        self.save(model)
         logger.info("Model Training completed successfully")
