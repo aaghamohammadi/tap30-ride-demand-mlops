@@ -18,6 +18,8 @@
 from pathlib import Path
 
 import joblib
+import mlflow
+import mlflow.sklearn
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
@@ -48,8 +50,10 @@ class ModelTraining:
                 val_data : pd.DataFrame
                     Validation data
         """
-        train_data = pd.read_csv(self.processed_dir / "train.csv")
-        val_data = pd.read_csv(self.processed_dir / "validation.csv")
+        self.train_path = self.processed_dir / "train.csv"
+        self.val_path = self.processed_dir / "validation.csv"
+        train_data = pd.read_csv(self.train_path)
+        val_data = pd.read_csv(self.val_path)
 
         return train_data, val_data
 
@@ -98,9 +102,11 @@ class ModelTraining:
         X_val, y_val = val_data.drop(columns=["demand"]), val_data["demand"]
         y_pred = model.predict(X_val)
         y_pred = [round(x) for x in y_pred]
-        rmse = root_mean_squared_error(y_val, y_pred)
-        logger.info(f"Out-of-Bag Score: {model.oob_score_}")
-        logger.info(f"Root Mean Squared Error for validation data: {rmse}")
+        self.rmse = root_mean_squared_error(y_val, y_pred)
+        self.oob_score = model.oob_score_
+
+        logger.info(f"Out-of-Bag Score: {self.oob_score}")
+        logger.info(f"Root Mean Squared Error for validation data: {self.rmse}")
 
     def save(self, model):
         """Save the trained model to disk using joblib.
@@ -115,7 +121,8 @@ class ModelTraining:
         The model is saved as a compressed .joblib file in the model_output_dir directory
         """
         logger.info("Start saving the model")
-        joblib.dump(model, self.model_output_dir / "rf.joblib", compress=("lzma", 3))
+        self.model_output_path = self.model_output_dir / "rf.joblib"
+        joblib.dump(model, self.model_output_path, compress=("lzma", 3))
         logger.info(
             f"Model saved successfully to {self.model_output_dir / 'rf.joblib'}"
         )
@@ -130,10 +137,30 @@ class ModelTraining:
         >>> model_training = ModelTraining(config)
         >>> model_training.run()
         """
-        logger.info("Model Training started")
-        train_data, val_data = self.load_data()
-        model = self.build_model()
-        self.train(model, train_data)
-        self.evaluate(model, val_data)
-        self.save(model)
-        logger.info("Model Training completed successfully")
+        mlflow.set_experiment("tap30_ride_demand_mlops")
+
+        with mlflow.start_run():
+            logger.info("Model Training started")
+            logger.info("MLflow started")
+            mlflow.set_tag("model_type", "random_forest")
+
+            train_data, val_data = self.load_data()
+            mlflow.log_artifact(self.train_path, "datasets")
+            mlflow.log_artifact(self.val_path, "datasets")
+
+            model = self.build_model()
+            self.train(model, train_data)
+            self.evaluate(model, val_data)
+
+            mlflow.log_metric("rmse", self.rmse)
+            mlflow.log_metric("oob_score", self.oob_score)
+
+            self.save(model)
+
+            mlflow.log_artifact(self.model_output_path, "models")
+
+            params = model.get_params()
+            mlflow.log_params(params)
+
+            logger.info("MLflow completed successfully")
+            logger.info("Model Training completed successfully")
