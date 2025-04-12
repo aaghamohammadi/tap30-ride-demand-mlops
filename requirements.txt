@@ -2,3 +2,4 @@ pandas==2.2.3
 matplotlib==v3.10.1
 scikit-learn==1.6.1
 mlflow==2.21.3
+fastapi[standard]==0.115.12
