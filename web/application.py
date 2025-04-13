@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 
 import joblib
+import pandas as pd
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel, conint
@@ -48,7 +49,16 @@ class DemandResponse(BaseModel):
 
 @app.post("/predict", response_model=DemandResponse)
 def predict_demand(request: DemandRequest):
-    features = [[request.hour_of_day, request.day, request.row, request.col]]
+    features = pd.DataFrame(
+        [
+            {
+                "hour_of_day": request.hour_of_day,
+                "day": request.day,
+                "row": request.row,
+                "col": request.col,
+            }
+        ]
+    )
 
     prediction = model.predict(features)[0]
     return {"demand": round(prediction)}
