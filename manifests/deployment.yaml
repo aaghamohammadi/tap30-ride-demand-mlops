@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tap30-ride-demand-mlops
+  namespace: tap30
+  labels:
+    app: tap30-ride-demand-mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tap30-ride-demand-mlops
+  template:
+    metadata:
+      labels:
+        app: tap30-ride-demand-mlops
+    spec:
+      containers:
+      - name: tap30-ride-demand-mlops
+        image: aaghamohammadi/tap30-ride-demand-mlops:0.1.0
+        ports:
+        - containerPort: 8080

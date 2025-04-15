@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tap30-ride-demand-mlops
+  namespace: tap30
+  labels:
+    app: tap30-ride-demand-mlops
+spec:
+  type: LoadBalancer
+  selector:
+    app: tap30-ride-demand-mlops
+  ports:
+    - name: web
+      port: 80
+      targetPort: 8080
